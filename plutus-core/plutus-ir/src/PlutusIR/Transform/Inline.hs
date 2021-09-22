@@ -164,7 +164,7 @@ and rename everything when we substitute in, which GHC considers too expensive b
 inline
     :: ExternalConstraints tyname name uni fun m
     => Term tyname name uni fun a
-    -> m (Term tyname name uni fun a)
+    -> m (Maybe (Term tyname name uni fun a))
 inline t = let
         inlineInfo :: InlineInfo
         inlineInfo = InlineInfo (snd deps) usgs
@@ -190,9 +190,9 @@ This might mean reinventing GHC's OccAnal...
 processTerm
     :: forall tyname name uni fun a. InliningConstraints tyname name uni fun
     => Term tyname name uni fun a
-    -> InlineM tyname name uni fun a (Term tyname name uni fun a)
+    -> InlineM tyname name uni fun a (Maybe (Term tyname name uni fun a))
 processTerm = handleTerm <=< traverseOf termSubtypes applyTypeSubstitution where
-    handleTerm :: Term tyname name uni fun a -> InlineM tyname name uni fun a (Term tyname name uni fun a)
+    handleTerm :: Term tyname name uni fun a -> InlineM tyname name uni fun a (Maybe (Term tyname name uni fun a))
     handleTerm = \case
         v@(Var _ n) -> fromMaybe v <$> substName n
         Let a NonRec bs t -> do
@@ -217,7 +217,7 @@ processTerm = handleTerm <=< traverseOf termSubtypes applyTypeSubstitution where
                 Nothing   -> pure t'
         -- This includes recursive let terms, we don't even consider inlining them at the moment
         t -> forMOf termSubterms t processTerm
-    applyTypeSubstitution :: Type tyname uni a -> InlineM tyname name uni fun a (Type tyname uni a)
+    applyTypeSubstitution :: Type tyname uni a -> InlineM tyname name uni fun a (Maybe (Type tyname uni a))
     applyTypeSubstitution t = gets isTypeSubstEmpty >>= \case
         -- The type substitution is very often empty, and there are lots of types in the program, so this saves a lot of work (determined from profiling)
         True -> pure t

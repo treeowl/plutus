@@ -38,5 +38,5 @@ bindingSubstNames :: (name -> Maybe (Term tyname name uni fun a)) -> Binding tyn
 bindingSubstNames nameF = over bindingSubterms (termSubstNames nameF)
 
 -- | Naively substitute type names using the given functions (i.e. do not substitute binders).
-bindingSubstTyNames :: (tyname -> Maybe (Type tyname uni a)) -> Binding tyname name uni fun a -> Binding tyname name uni fun a
+bindingSubstTyNames :: (tyname -> Maybe (Type tyname uni a)) -> Binding tyname name uni fun a -> Maybe (Binding tyname name uni fun a)
 bindingSubstTyNames tynameF = over bindingSubterms (termSubstTyNames tynameF) . over bindingSubtypes (typeSubstTyNames tynameF)

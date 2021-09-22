@@ -146,10 +146,10 @@ substAllNames
     :: Monad m
     => (Name -> m (Maybe Name))
     -> Term TyName Name DefaultUni DefaultFun ()
-    -> m (Term TyName Name DefaultUni DefaultFun ())
+    -> m (Maybe (Term TyName Name DefaultUni DefaultFun ()))
 substAllNames ren =
     termSubstNamesM (fmap (fmap $ Var ()) . ren) >=>
-    termSubstTyNamesM (fmap (fmap $ TyVar () . TyName) . ren . unTyName)
+    maybe (pure Nothing) (termSubstTyNamesM (fmap (fmap $ TyVar () . TyName) . ren . unTyName))
 
 -- See Note [ScopeHandling].
 allTermNames :: Term TyName Name DefaultUni DefaultFun () -> Set Name
