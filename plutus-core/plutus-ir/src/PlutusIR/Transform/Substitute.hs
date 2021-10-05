@@ -31,7 +31,7 @@ termSubstNames nameF = transformOf termSubterms (\x -> fromMaybe x (substVar nam
 
 -- | Naively substitute type names using the given functions (i.e. do not substitute binders).
 termSubstTyNames :: (tyname -> Maybe (Type tyname uni a)) -> Term tyname name uni fun a -> Term tyname name uni fun a
-termSubstTyNames tynameF = over termSubterms (termSubstTyNames tynameF) . over termSubtypes (typeSubstTyNames tynameF)
+termSubstTyNames tynameF = undefined -- over termSubterms (termSubstTyNames tynameF) . over termSubtypes (typeSubstTyNames tynameF)
 
 -- | Naively substitute names using the given functions (i.e. do not substitute binders).
 bindingSubstNames :: (name -> Maybe (Term tyname name uni fun a)) -> Binding tyname name uni fun a -> Binding tyname name uni fun a
@@ -39,4 +39,4 @@ bindingSubstNames nameF = over bindingSubterms (termSubstNames nameF)
 
 -- | Naively substitute type names using the given functions (i.e. do not substitute binders).
 bindingSubstTyNames :: (tyname -> Maybe (Type tyname uni a)) -> Binding tyname name uni fun a -> Maybe (Binding tyname name uni fun a)
-bindingSubstTyNames tynameF = over bindingSubterms (termSubstTyNames tynameF) . over bindingSubtypes (typeSubstTyNames tynameF)
+bindingSubstTyNames tynameF = undefined -- over bindingSubterms (termSubstTyNames tynameF) . over bindingSubtypes (typeSubstTyNames tynameF)

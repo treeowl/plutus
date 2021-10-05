@@ -160,10 +160,11 @@ mangleNames :: Term TyName Name DefaultUni DefaultFun () -> AstGen (Maybe (Term 
 mangleNames term = do
     let names = allTermNames term
     mayNamesMangle <- subset1 names
-    for mayNamesMangle $ \namesMangle -> do
+    res <- for mayNamesMangle $ \namesMangle -> do
         let isNew name = not $ name `Set.member` namesMangle
         newNames <- Gen.justT $ ensure (not . null) . filter isNew <$> genNames
         let mang name
                 | name `Set.member` namesMangle = Just <$> Gen.element newNames
                 | otherwise                     = return Nothing
         substAllNames mang term
+    pure $ join res
