@@ -187,14 +187,25 @@ TODO: merge them or figure out a way to share more work, especially since there'
 This might mean reinventing GHC's OccAnal...
 -}
 
+{-
+    traverseOf :: ((a -> f b) -> s -> f t) -> (a -> f b) -> s -> f t
+
+    type Traversal s t a b = forall f. Applicative f => (a -> f b) -> s -> f t
+
+    type Traversal' s a = Traversal s s a a
+    termSubtypes :: Traversal' (Term tyname name uni fun ann) (Type tyname uni ann)
+    ~> Traversal (Term tyname name uni fun ann) (Term tyname name uni fun ann) (Type tyname uni ann) (Type tyname uni ann)
+    ~> forall f. Applicative f => ((Type tyname uni ann) -> f (Type tyname uni ann)) -> (Term tyname name uni fun ann) -> f (Term tyname name uni fun ann)
+-}
+
 processTerm
     :: forall tyname name uni fun a. InliningConstraints tyname name uni fun
     => Term tyname name uni fun a
     -> InlineM tyname name uni fun a (Maybe (Term tyname name uni fun a))
-processTerm = handleTerm <=< traverseOf termSubtypes applyTypeSubstitution where
+processTerm = handleTerm <=< undefined where -- traverseOf termSubtypesM applyTypeSubstitution where
     handleTerm :: Term tyname name uni fun a -> InlineM tyname name uni fun a (Maybe (Term tyname name uni fun a))
     handleTerm = \case
-        v@(Var _ n) -> fromMaybe v <$> substName n
+        v@(Var _ n) -> (Just . fromMaybe v) <$> substName n
         Let a NonRec bs t -> do
             -- Process bindings, eliminating those which will be inlined unconditionally,
             -- and accumulating the new substitutions
@@ -206,21 +217,22 @@ processTerm = handleTerm <=< traverseOf termSubtypes applyTypeSubstitution where
             t' <- processTerm t
             -- Use 'mkLet': we're using lists of bindings rather than NonEmpty since we might actually
             -- have got rid of all of them!
-            pure $ mkLet a NonRec bs' t'
+            pure $ (mkLet a NonRec bs') <$> t'
         -- We cannot currently soundly do beta for types (see SCP-2570), so we just recognize
         -- immediately instantiated type abstractions here directly.
         (TyInst a (TyAbs a' tn k t) rhs) -> do
             b' <- maybeAddTySubst tn rhs
             t' <- processTerm t
-            case b' of
-                Just rhs' -> pure $ TyInst a (TyAbs a' tn k t') rhs'
-                Nothing   -> pure t'
+            case (b', t') of
+                (Just rhs', Just t'') -> pure $ Just $ TyInst a (TyAbs a' tn k t'') rhs'
+                (Nothing, _)          -> pure t'
+                _                     -> pure Nothing
         -- This includes recursive let terms, we don't even consider inlining them at the moment
-        t -> forMOf termSubterms t processTerm
+        t ->  undefined -- forMOf termSubterms t processTerm
     applyTypeSubstitution :: Type tyname uni a -> InlineM tyname name uni fun a (Maybe (Type tyname uni a))
     applyTypeSubstitution t = gets isTypeSubstEmpty >>= \case
         -- The type substitution is very often empty, and there are lots of types in the program, so this saves a lot of work (determined from profiling)
-        True -> pure t
+        True -> pure $ Just t
         _    -> typeSubstTyNamesM substTyName t
     -- See Note [Renaming strategy]
     substTyName :: tyname -> InlineM tyname name uni fun a (Maybe (Type tyname uni a))
@@ -256,7 +268,7 @@ processSingleBinding = \case
         maybeRhs' <- maybeAddTySubst n rhs
         pure $ TypeBind a v <$> maybeRhs'
     -- Just process all the subterms
-    b -> Just <$> forMOf bindingSubterms b processTerm
+    b -> undefined -- Just <$> forMOf bindingSubterms b processTerm
 
 -- NOTE:  Nothing means that we are inlining the term:
 --   * we have extended the substitution, and
@@ -268,16 +280,18 @@ maybeAddSubst
     -> Term tyname name uni fun a
     -> InlineM tyname name uni fun a (Maybe (Term tyname name uni fun a))
 maybeAddSubst s n rhs = do
-    rhs' <- processTerm rhs
-    preUnconditional <- preInlineUnconditional rhs'
-    if preUnconditional
-    then extendAndDrop (Done rhs')
-    else do
-        -- See Note [Inlining approach and 'Secrets of the GHC Inliner']
-        postUnconditional <- postInlineUnconditional rhs'
-        if postUnconditional
+    mrhs <- processTerm rhs
+    res <- for mrhs $ \rhs' -> do
+        preUnconditional <- preInlineUnconditional rhs'
+        if preUnconditional
         then extendAndDrop (Done rhs')
-        else pure $ Just rhs'
+        else do
+            -- See Note [Inlining approach and 'Secrets of the GHC Inliner']
+            postUnconditional <- postInlineUnconditional rhs'
+            if postUnconditional
+            then extendAndDrop (Done rhs')
+            else pure $ Just rhs'
+    pure $ join res
     where
         extendAndDrop :: forall b . InlineTerm tyname name uni fun a -> InlineM tyname name uni fun a (Maybe b)
         extendAndDrop t = modify' (extendTerm n t) >> pure Nothing
