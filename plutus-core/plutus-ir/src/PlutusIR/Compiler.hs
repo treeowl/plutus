@@ -83,15 +83,13 @@ logDebug :: Compiling m e uni fun a => String -> m ()
 logDebug = whenM isDebug . traceM
 
 applyPass :: (Compiling m e uni fun a, b ~ Provenance a) => Pass uni fun -> Term TyName Name uni fun b -> m (Maybe (Term TyName Name uni fun b))
-applyPass pass term = do
-  c <- runIf (_shouldRun pass) $ do
-    let passName = _name pass
-    logVerbose $ "      !!! " ++ passName
-    logDebug   $ "        !!! Before " ++ passName ++ "\n" ++ show (pretty term)
-    term' <- _pass pass term
-    logDebug   $ "        !!! After " ++ passName ++ "\n" ++ show (pretty term')
-    pure term'
-  c >=> through check
+applyPass pass = runIf (_shouldRun pass) $ through check <=< \term -> do
+  let passName = _name pass
+  logVerbose $ "      !!! " ++ passName
+  logDebug   $ "        !!! Before " ++ passName ++ "\n" ++ show (pretty term)
+  term' <- _pass pass term
+  logDebug   $ "        !!! After " ++ passName ++ "\n" ++ show (pretty term')
+  pure term'
 
 availablePasses :: [Pass uni fun]
 availablePasses =
@@ -103,8 +101,8 @@ availablePasses =
 -- | Actual simplifier
 simplify
     :: forall m e uni fun a b. (Compiling m e uni fun a, b ~ Provenance a)
-    => Term TyName Name uni fun b -> m (Term TyName Name uni fun b)
-simplify = foldl' (>=>) pure (map applyPass availablePasses)
+    => Term TyName Name uni fun b -> m (Maybe (Term TyName Name uni fun b))
+simplify t = foldl' (>=>) (pure) (map applyPass availablePasses)
 
 -- | Perform some simplification of a 'Term'.
 simplifyTerm
