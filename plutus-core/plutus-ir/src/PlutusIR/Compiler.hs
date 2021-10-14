@@ -83,7 +83,7 @@ logDebug :: Compiling m e uni fun a => String -> m ()
 logDebug = whenM isDebug . traceM
 
 applyPass :: (Compiling m e uni fun a, b ~ Provenance a) => Pass uni fun -> Term TyName Name uni fun b -> m (Maybe (Term TyName Name uni fun b))
-applyPass pass = runIf (_shouldRun pass) $ through check <=< \term -> do
+applyPass pass = runIfM (_shouldRun pass) $ through (mapM check) <=< \term -> do
   let passName = _name pass
   logVerbose $ "      !!! " ++ passName
   logDebug   $ "        !!! Before " ++ passName ++ "\n" ++ show (pretty term)
@@ -102,7 +102,7 @@ availablePasses =
 simplify
     :: forall m e uni fun a b. (Compiling m e uni fun a, b ~ Provenance a)
     => Term TyName Name uni fun b -> m (Maybe (Term TyName Name uni fun b))
-simplify t = foldl' (>=>) (pure) (map applyPass availablePasses)
+simplify = foldl' (>=>) (pure . Just) (map (maybe (pure Nothing) . applyPass) availablePasses)
 
 -- | Perform some simplification of a 'Term'.
 simplifyTerm
@@ -114,12 +114,14 @@ simplifyTerm = runIfOpts $ simplify'
         simplify' :: Term TyName Name uni fun b -> m (Term TyName Name uni fun b)
         simplify' t = do
             maxIterations <- view (ccOpts . coMaxSimplifierIterations)
-            simplifyNTimes maxIterations t
+            t' <- simplifyNTimes maxIterations t
+            -- return 't' if no changes
+            pure $ fromMaybe t t'
         -- Run the simplifier @n@ times
-        simplifyNTimes :: Int -> Term TyName Name uni fun b -> m (Term TyName Name uni fun b)
-        simplifyNTimes n = foldl' (>=>) pure (map simplifyStep [1 .. n])
+        simplifyNTimes :: Int -> Term TyName Name uni fun b -> m (Maybe (Term TyName Name uni fun b))
+        simplifyNTimes n = foldl' (>=>) (pure . Just) (map (maybe (pure Nothing) . simplifyStep) [1 .. n])
         -- generate simplification step
-        simplifyStep :: Int -> Term TyName Name uni fun b -> m (Term TyName Name uni fun b)
+        simplifyStep :: Int -> Term TyName Name uni fun b -> m (Maybe (Term TyName Name uni fun b))
         simplifyStep i term = do
           logVerbose $ "    !!! simplifier pass " ++ show i
           simplify term
