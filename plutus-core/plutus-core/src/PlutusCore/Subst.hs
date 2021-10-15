@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 module PlutusCore.Subst
     ( substTyVarA
     , substVarA
@@ -92,8 +93,48 @@ termSubstTyNamesM
     => (tyname -> m (Maybe (Type tyname uni ann)))
     -> Term tyname name uni fun ann
     -> m (Maybe (Term tyname name uni fun ann))
-termSubstTyNamesM =
-    transformMOf termSubterms . traverseOf termSubtypes . mapMOf typeSubtypes . substTyVarA
+termSubstTyNamesM tynameF =
+    let m' :: Applicative f => Type tyname uni ann -> f (Maybe (Type tyname uni ann))
+        m' t = mapMOf typeSubtypes (substTyVarA tynameF) t
+        n :: Monad m => Term tyname name uni fun ann -> m (Maybe (Term tyname name uni fun ann))
+        n term0 = case term0 of
+            LamAbs ann n ty t   -> do
+                ty' <- m' ty
+                pure $ (LamAbs ann n) <$> ty' <*> pure t
+            TyInst ann t ty     -> fmap (TyInst ann t) <$> m' ty
+            IWrap ann ty1 ty2 t -> do
+                ty1' <- m' ty1
+                ty2' <- m' ty2
+                pure $ IWrap ann <$> ty1' <*> ty2' <*> pure t
+            Error ann ty        -> fmap (Error ann) <$> m' ty
+            TyAbs{}             -> pure $ Just term0
+            Apply{}             -> pure $ Just term0
+            Unwrap{}            -> pure $ Just term0
+            Var{}               -> pure $ Just term0
+            Constant{}          -> pure $ Just term0
+            Builtin{}           -> pure $ Just term0
+        k :: Monad m => Term tyname name uni fun ann -> m (Maybe (Term tyname name uni fun ann))
+        k t = transformMOf' termSubterms n t
+    in k
+
+transformMOf' :: LensLike (WrappedMonad m) a b a b -> (b -> m (Maybe b)) -> a -> m (Maybe b)
+transformMOf' l f = undefined -- go where
+    -- go :: a -> m (Maybe b)
+    -- go t = mapMOf l go t >>= f
+        -- let xs = undefined
+        -- r <- go <$> xs
+        -- f r
+{-# INLINE transformMOf' #-}
+-- transformMOf :: Monad m
+--    => LensLike (WrappedMonad m) (Term tyname name uni fun ann) (Maybe (Term tyname name uni fun ann)) (Term tyname name uni fun ann) (Maybe (Term tyname name uni fun ann))
+--    -> ((Maybe (Term tyname name uni fun ann)) -> m (Maybe (Term tyname name uni fun ann)))
+--    -> (Term tyname name uni fun ann)
+--    -> m (Maybe (Term tyname name uni fun ann))
+
+    -- let m ts = transformMOf typeSubtypes (substTyVarA tynameF) ts
+    --     n ts = traverseOf termSubtypes m ts
+    --     k t = transformMOf termSubterms n t
+    -- in k
 
 -- substTyVarA
 --     :: Applicative f
