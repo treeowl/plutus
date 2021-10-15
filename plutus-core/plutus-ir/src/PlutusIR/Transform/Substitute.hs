@@ -44,4 +44,3 @@ bindingSubstTyNames :: (tyname -> Maybe (Type tyname uni a)) -> Binding tyname n
 bindingSubstTyNames tynameF b =
   let b' = mapMOf bindingSubtypes (typeSubstTyNames tynameF) b
   in join $ mapMOf bindingSubterms (termSubstTyNames tynameF) <$> b'
-

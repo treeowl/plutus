@@ -92,8 +92,16 @@ termSubstTyNamesM
     => (tyname -> m (Maybe (Type tyname uni ann)))
     -> Term tyname name uni fun ann
     -> m (Maybe (Term tyname name uni fun ann))
-termSubstTyNamesM = undefined
---    transformMOf termSubterms . traverseOf termSubtypes . transformMOf typeSubtypes . substTyVarA
+termSubstTyNamesM =
+    transformMOf termSubterms . traverseOf termSubtypes . mapMOf typeSubtypes . substTyVarA
+
+-- substTyVarA
+--     :: Applicative f
+--     => (tyname -> f (Maybe (Type tyname uni ann)))
+--     -> Type tyname uni ann
+--     -> f (Maybe (Type tyname uni ann))
+-- substTyVarA tynameF ty@(TyVar _ tyname) = tynameF tyname
+-- substTyVarA _       ty                  = pure Nothing
 
 -- | Naively substitute type names (i.e. do not substitute binders).
 typeSubstTyNames
