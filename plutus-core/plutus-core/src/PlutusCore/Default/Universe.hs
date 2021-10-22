@@ -25,15 +25,15 @@ module PlutusCore.Default.Universe
     , module Export  -- Re-exporting universes infrastructure for convenience.
     ) where
 
-import           PlutusCore.Core
-import           PlutusCore.Data
-import           PlutusCore.Parsable
+import PlutusCore.Core
+import PlutusCore.Data
+import PlutusCore.Parsable
 
-import           Control.Applicative
-import qualified Data.ByteString     as BS
-import           Data.Foldable
-import qualified Data.Text           as Text
-import           Universe            as Export
+import Control.Applicative
+import Data.ByteString     qualified as BS
+import Data.Foldable
+import Data.Text           qualified as Text
+import Universe            as Export
 
 {- Note [PLC types and universes]
 We encode built-in types in PLC as tags for Haskell types (the latter are also called meta-types),

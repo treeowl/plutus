@@ -10,13 +10,13 @@ module PlutusCore.Constant.Function
     , getArity
     ) where
 
-import           PlutusCore.Constant.Typed
-import           PlutusCore.Core
-import           PlutusCore.Name
+import PlutusCore.Constant.Typed
+import PlutusCore.Core
+import PlutusCore.Name
 
-import           Data.Proxy
-import qualified Data.Text                 as Text
-import           GHC.TypeLits
+import Data.Proxy
+import Data.Text                 qualified as Text
+import GHC.TypeLits
 
 -- | Convert a 'TypeScheme' to the corresponding 'Type'.
 -- Basically, a map from the PHOAS representation to the FOAS one.
