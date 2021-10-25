@@ -751,6 +751,7 @@
           "fail".components.library.planned = lib.mkOverride 900 true;
           "constraints-extras".components.exes."readme".planned = lib.mkOverride 900 true;
           "dense-linear-algebra".components.library.planned = lib.mkOverride 900 true;
+          "plutus-core".components.tests."executable-test".planned = lib.mkOverride 900 true;
           "charset".components.library.planned = lib.mkOverride 900 true;
           "alex".components.exes."alex".planned = lib.mkOverride 900 true;
           "constraints-extras".components.library.planned = lib.mkOverride 900 true;

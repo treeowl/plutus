@@ -348,7 +348,7 @@
             ];
           buildable = true;
           modules = [ "Common" "Parsers" ];
-          hsSourceDirs = [ "executables" ];
+          hsSourceDirs = [ "executables/src" ];
           mainPath = [ "plc/Main.hs" ];
           };
         "uplc" = {
@@ -369,7 +369,7 @@
             ];
           buildable = true;
           modules = [ "Common" "Parsers" ];
-          hsSourceDirs = [ "executables" ];
+          hsSourceDirs = [ "executables/src" ];
           mainPath = [ "uplc/Main.hs" ];
           };
         "pir" = {
@@ -391,7 +391,7 @@
             ];
           buildable = true;
           modules = [ "Common" "Parsers" ];
-          hsSourceDirs = [ "executables" ];
+          hsSourceDirs = [ "executables/src" ];
           mainPath = [ "pir/Main.hs" ];
           };
         "traceToStacks" = {
@@ -405,8 +405,8 @@
             (hsPkgs."vector" or (errorHandler.buildDepError "vector"))
             ];
           buildable = true;
-          hsSourceDirs = [ "executables/traceToStacks" ];
-          mainPath = [ "Main.hs" ];
+          hsSourceDirs = [ "executables/src" ];
+          mainPath = [ "traceToStacks/Main.hs" ];
           };
         };
       tests = {
@@ -515,6 +515,18 @@
             "Transform/Simplify"
             ];
           hsSourceDirs = [ "untyped-plutus-core/test" ];
+          mainPath = [ "Spec.hs" ];
+          };
+        "executable-test" = {
+          depends = [
+            (hsPkgs."base" or (errorHandler.buildDepError "base"))
+            (hsPkgs."plutus-core" or (errorHandler.buildDepError "plutus-core"))
+            (hsPkgs."prettyprinter" or (errorHandler.buildDepError "prettyprinter"))
+            (hsPkgs."tasty" or (errorHandler.buildDepError "tasty"))
+            (hsPkgs."tasty-hunit" or (errorHandler.buildDepError "tasty-hunit"))
+            ];
+          buildable = true;
+          hsSourceDirs = [ "executables/test" ];
           mainPath = [ "Spec.hs" ];
           };
         "index-envs-test" = {

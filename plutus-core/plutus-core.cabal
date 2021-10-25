@@ -428,10 +428,22 @@ test-suite untyped-plutus-core-test
         tasty-hunit -any,
         text -any
 
+test-suite executable-test
+    import: lang
+    type: exitcode-stdio-1.0
+    main-is: Spec.hs
+    hs-source-dirs: executables/test
+    build-depends:
+        base >=4.9 && <5,
+        plutus-core -any,
+        prettyprinter -any,
+        tasty -any,
+        tasty-hunit -any,
+
 executable plc
     import: lang
     main-is: plc/Main.hs
-    hs-source-dirs: executables
+    hs-source-dirs: executables/src
     other-modules:
         Common
         Parsers
@@ -451,7 +463,7 @@ executable plc
 executable uplc
     import: lang
     main-is: uplc/Main.hs
-    hs-source-dirs: executables
+    hs-source-dirs: executables/src
     other-modules:
         Common
         Parsers
@@ -473,7 +485,7 @@ executable uplc
 executable pir
     import: lang
     main-is: pir/Main.hs
-    hs-source-dirs: executables
+    hs-source-dirs: executables/src
     other-modules:
         Common
         Parsers
@@ -496,8 +508,8 @@ executable pir
 
 executable traceToStacks
     import: lang
-    main-is: Main.hs
-    hs-source-dirs: executables/traceToStacks
+    main-is: traceToStacks/Main.hs
+    hs-source-dirs: executables/src
     build-depends:
         base >=4.9 && <5,
         cassava -any,

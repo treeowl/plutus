@@ -117,7 +117,7 @@ getStacks = go []
           -- minus the time spent on the function(s) it called.
           MkStackTime (var:fnsEntered) (diffVal - valSpentCalledFun):go updatedStack tl
     go _ ((MkProfileEvent _ Exit _):_) =
-      error "go: tried to exit but couldn't."
+      error "getStacks; go: tried to exit but couldn't."
     go [] [] = []
     go stacks [] = error $
       "go: stack " <> show stacks <> " isn't empty but the log is."
