@@ -40,7 +40,6 @@
             (hsPkgs."criterion" or (errorHandler.buildDepError "criterion"))
             (hsPkgs."deepseq" or (errorHandler.buildDepError "deepseq"))
             (hsPkgs."filepath" or (errorHandler.buildDepError "filepath"))
-            (hsPkgs."flat" or (errorHandler.buildDepError "flat"))
             (hsPkgs."transformers" or (errorHandler.buildDepError "transformers"))
             ];
           buildable = true;
@@ -75,7 +74,7 @@
             ];
           hsSourceDirs = [ "nofib/src" ];
           };
-        "list-sort-internal" = {
+        "lists-internal" = {
           depends = [
             (hsPkgs."base" or (errorHandler.buildDepError "base"))
             (hsPkgs."plutus-benchmark".components.sublibs.plutus-benchmark-common or (errorHandler.buildDepError "plutus-benchmark:plutus-benchmark-common"))
@@ -85,12 +84,15 @@
             ];
           buildable = true;
           modules = [
-            "PlutusBenchmark/ListSort/GhcSort"
-            "PlutusBenchmark/ListSort/InsertionSort"
-            "PlutusBenchmark/ListSort/MergeSort"
-            "PlutusBenchmark/ListSort/QuickSort"
+            "PlutusBenchmark/Lists/Sort/GhcSort"
+            "PlutusBenchmark/Lists/Sort/InsertionSort"
+            "PlutusBenchmark/Lists/Sort/MergeSort"
+            "PlutusBenchmark/Lists/Sort/QuickSort"
+            "PlutusBenchmark/Lists/Sort"
+            "PlutusBenchmark/Lists/Sum/Compiled"
+            "PlutusBenchmark/Lists/Sum/HandWritten"
             ];
-          hsSourceDirs = [ "list-sort/src" ];
+          hsSourceDirs = [ "lists/src" ];
           };
         };
       exes = {
@@ -114,12 +116,12 @@
           depends = [
             (hsPkgs."base" or (errorHandler.buildDepError "base"))
             (hsPkgs."plutus-benchmark".components.sublibs.plutus-benchmark-common or (errorHandler.buildDepError "plutus-benchmark:plutus-benchmark-common"))
-            (hsPkgs."plutus-benchmark".components.sublibs.list-sort-internal or (errorHandler.buildDepError "plutus-benchmark:list-sort-internal"))
+            (hsPkgs."plutus-benchmark".components.sublibs.lists-internal or (errorHandler.buildDepError "plutus-benchmark:lists-internal"))
             (hsPkgs."monoidal-containers" or (errorHandler.buildDepError "monoidal-containers"))
             (hsPkgs."plutus-core" or (errorHandler.buildDepError "plutus-core"))
             ];
           buildable = true;
-          hsSourceDirs = [ "list-sort/exe" ];
+          hsSourceDirs = [ "lists/exe" ];
           mainPath = [ "Main.hs" ];
           };
         };
@@ -139,16 +141,17 @@
           hsSourceDirs = [ "nofib/test" ];
           mainPath = [ "Spec.hs" ];
           };
-        "plutus-benchmark-list-sort-tests" = {
+        "plutus-benchmark-lists-tests" = {
           depends = [
             (hsPkgs."base" or (errorHandler.buildDepError "base"))
             (hsPkgs."plutus-benchmark".components.sublibs.plutus-benchmark-common or (errorHandler.buildDepError "plutus-benchmark:plutus-benchmark-common"))
-            (hsPkgs."plutus-benchmark".components.sublibs.list-sort-internal or (errorHandler.buildDepError "plutus-benchmark:list-sort-internal"))
+            (hsPkgs."plutus-benchmark".components.sublibs.lists-internal or (errorHandler.buildDepError "plutus-benchmark:lists-internal"))
             (hsPkgs."tasty" or (errorHandler.buildDepError "tasty"))
             (hsPkgs."tasty-quickcheck" or (errorHandler.buildDepError "tasty-quickcheck"))
             ];
           buildable = true;
-          hsSourceDirs = [ "list-sort/test" ];
+          modules = [ "Sort/Spec" "Sum/Spec" ];
+          hsSourceDirs = [ "lists/test" ];
           mainPath = [ "Spec.hs" ];
           };
         };
@@ -175,15 +178,15 @@
           modules = [ "Shared" ];
           hsSourceDirs = [ "nofib/bench" ];
           };
-        "list-sort" = {
+        "lists" = {
           depends = [
             (hsPkgs."base" or (errorHandler.buildDepError "base"))
             (hsPkgs."plutus-benchmark".components.sublibs.plutus-benchmark-common or (errorHandler.buildDepError "plutus-benchmark:plutus-benchmark-common"))
-            (hsPkgs."plutus-benchmark".components.sublibs.list-sort-internal or (errorHandler.buildDepError "plutus-benchmark:list-sort-internal"))
+            (hsPkgs."plutus-benchmark".components.sublibs.lists-internal or (errorHandler.buildDepError "plutus-benchmark:lists-internal"))
             (hsPkgs."criterion" or (errorHandler.buildDepError "criterion"))
             ];
           buildable = true;
-          hsSourceDirs = [ "list-sort/bench" ];
+          hsSourceDirs = [ "lists/bench" ];
           };
         "validation" = {
           depends = [
@@ -197,10 +200,21 @@
             (hsPkgs."filepath" or (errorHandler.buildDepError "filepath"))
             (hsPkgs."flat" or (errorHandler.buildDepError "flat"))
             (hsPkgs."optparse-applicative" or (errorHandler.buildDepError "optparse-applicative"))
-            (hsPkgs."transformers" or (errorHandler.buildDepError "transformers"))
             ];
           buildable = true;
           hsSourceDirs = [ "validation" ];
+          };
+        "cek-calibration" = {
+          depends = [
+            (hsPkgs."base" or (errorHandler.buildDepError "base"))
+            (hsPkgs."plutus-core" or (errorHandler.buildDepError "plutus-core"))
+            (hsPkgs."plutus-tx" or (errorHandler.buildDepError "plutus-tx"))
+            (hsPkgs."plutus-tx-plugin" or (errorHandler.buildDepError "plutus-tx-plugin"))
+            (hsPkgs."criterion" or (errorHandler.buildDepError "criterion"))
+            (hsPkgs."mtl" or (errorHandler.buildDepError "mtl"))
+            ];
+          buildable = true;
+          hsSourceDirs = [ "cek-calibration" ];
           };
         };
       };
