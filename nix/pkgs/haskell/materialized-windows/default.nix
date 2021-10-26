@@ -482,7 +482,10 @@
             flags = { "development" = lib.mkOverride 900 false; };
             };
           "plutus-tx-plugin" = {
-            flags = { "use-ghc-stub" = lib.mkOverride 900 true; };
+            flags = {
+              "use-ghc-stub" = lib.mkOverride 900 true;
+              "ghcjs-plugin" = lib.mkOverride 900 true;
+              };
             };
           "plutus-metatheory" = { flags = {}; };
           "measures" = {

@@ -453,7 +453,6 @@
     {
       packages = {
         flat = ./.plan.nix/flat.nix;
-        plutus-ghc-stub = ./.plan.nix/plutus-ghc-stub.nix;
         plutus-benchmark = ./.plan.nix/plutus-benchmark.nix;
         cardano-slotting = ./.plan.nix/cardano-slotting.nix;
         cardano-crypto-class = ./.plan.nix/cardano-crypto-class.nix;
@@ -484,7 +483,6 @@
       {
         packages = {
           "flat" = { flags = {}; };
-          "plutus-ghc-stub" = { flags = {}; };
           "plutus-benchmark" = { flags = {}; };
           "cardano-slotting" = {
             flags = { "development" = lib.mkOverride 900 false; };
@@ -493,7 +491,10 @@
             flags = { "development" = lib.mkOverride 900 false; };
             };
           "plutus-tx-plugin" = {
-            flags = { "use-ghc-stub" = lib.mkOverride 900 false; };
+            flags = {
+              "use-ghc-stub" = lib.mkOverride 900 false;
+              "ghcjs-plugin" = lib.mkOverride 900 false;
+              };
             };
           "plutus-metatheory" = { flags = {}; };
           "measures" = {
@@ -749,7 +750,6 @@
           "flat".components.library.planned = lib.mkOverride 900 true;
           "inline-c".components.library.planned = lib.mkOverride 900 true;
           "mwc-random".components.library.planned = lib.mkOverride 900 true;
-          "plutus-ghc-stub".components.library.planned = lib.mkOverride 900 true;
           "fingertree".components.library.planned = lib.mkOverride 900 true;
           "test-framework".components.library.planned = lib.mkOverride 900 true;
           "canonical-json".components.library.planned = lib.mkOverride 900 true;
