@@ -10,7 +10,6 @@ packages: plutus-benchmark
           plutus-tx-plugin
           prettyprinter-configurable
           word-array
-          stubs/plutus-ghc-stub
 
 -- We never, ever, want this.
 write-ghc-environment-files: never
@@ -21,6 +20,9 @@ benchmarks: true
 
 -- The only sensible test display option
 test-show-details: streaming
+
+package ghci
+  flags: +ghci
 
 allow-newer:
            -- Pins to an old version of Template Haskell, unclear if/when it will be updated
