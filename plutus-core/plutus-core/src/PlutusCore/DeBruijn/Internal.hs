@@ -7,6 +7,7 @@
 -- | Support for using de Bruijn indices for term and type names.
 module PlutusCore.DeBruijn.Internal
     ( Index (..)
+    , HasIndex (..)
     , DeBruijn (..)
     , NamedDeBruijn (..)
     , TyDeBruijn (..)
@@ -29,6 +30,7 @@ module PlutusCore.DeBruijn.Internal
     , tyNameToDeBruijn
     , deBruijnToName
     , deBruijnToTyName
+    , runDeBruijnT
     ) where
 
 import           PlutusCore.Name
@@ -45,14 +47,12 @@ import qualified Data.Bimap               as BM
 import qualified Data.Text                as T
 import           Prettyprinter
 
-import           Numeric.Natural
-
 import           Control.DeepSeq          (NFData)
 import           ErrorCode
 import           GHC.Generics
 
 -- | A relative index used for de Bruijn identifiers.
-newtype Index = Index Natural
+newtype Index = Index Word
     deriving stock Generic
     deriving newtype (Show, Num, Eq, Ord, Pretty)
     deriving anyclass NFData
@@ -225,3 +225,6 @@ deBruijnToTyName
     :: (MonadReader Levels m, AsFreeVariableError e, MonadError e m)
     => NamedTyDeBruijn -> m TyName
 deBruijnToTyName (NamedTyDeBruijn n) = TyName <$> deBruijnToName n
+
+runDeBruijnT :: ReaderT Levels m a -> m a
+runDeBruijnT = flip runReaderT (Levels 0 BM.empty)

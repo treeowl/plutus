@@ -112,7 +112,8 @@ instance ToUPlc (UPLC.Program TPLC.Name uni fun ()) uni fun where
     toUPlc = pure
 
 instance ToUPlc (UPLC.Program UPLC.NamedDeBruijn uni fun ()) uni fun where
-    toUPlc p = withExceptT @_ @FreeVariableError toException $ TPLC.runQuoteT $ UPLC.unDeBruijnProgram p
+    toUPlc p = withExceptT @_ @FreeVariableError toException $
+        TPLC.runQuoteT $ TPLC.runDeBruijnT $ overUPLCTerm UPLC.unNamedTermDeBruijnM p
 
 pureTry :: Exception e => a -> Either e a
 pureTry = unsafePerformIO . try . evaluate
@@ -180,28 +181,28 @@ goldenTPlc
     => String -> a -> TestNested
 goldenTPlc name value = nestedGoldenVsDocM name $ ppThrow $ do
     p <- toTPlc value
-    withExceptT @_ @FreeVariableError toException $ deBruijnProgram p
+    withExceptT @_ @FreeVariableError toException $ runDeBruijnT $ overTPLCTerm TPLC.namedTermDeBruijnM p
 
 goldenTPlcCatch
     :: ToTPlc a DefaultUni TPLC.DefaultFun
     => String -> a -> TestNested
 goldenTPlcCatch name value = nestedGoldenVsDocM name $ ppCatch $ do
     p <- toTPlc value
-    withExceptT @_ @FreeVariableError toException $ deBruijnProgram p
+    withExceptT @_ @FreeVariableError toException $ runDeBruijnT $ overTPLCTerm TPLC.namedTermDeBruijnM p
 
 goldenUPlc
     :: ToUPlc a DefaultUni TPLC.DefaultFun
      => String -> a -> TestNested
 goldenUPlc name value = nestedGoldenVsDocM name $ ppThrow $ do
     p <- toUPlc value
-    withExceptT @_ @FreeVariableError toException $ UPLC.deBruijnProgram p
+    withExceptT @_ @FreeVariableError toException $ runDeBruijnT $ overUPLCTerm UPLC.namedTermDeBruijnM p
 
 goldenUPlcCatch
     :: ToUPlc a DefaultUni TPLC.DefaultFun
     => String -> a -> TestNested
 goldenUPlcCatch name value = nestedGoldenVsDocM name $ ppCatch $ do
     p <- toUPlc value
-    withExceptT @_ @FreeVariableError toException $ UPLC.deBruijnProgram p
+    withExceptT @_ @FreeVariableError toException $ runDeBruijnT $ overUPLCTerm UPLC.namedTermDeBruijnM p
 
 goldenTEval
     :: ToTPlc a DefaultUni TPLC.DefaultFun
@@ -328,3 +329,16 @@ test_scopingBad gen mark renM =
         , testCase "renaming with no marking destroys scoping" $
             checkFails . prop_scopingFor gen $ noMarkRename renM
         ]
+
+-- TODO: lenses?
+overUPLCTerm :: Functor f
+             => (UPLC.Term name1 uni fun ann -> f (UPLC.Term name2 uni fun ann))
+             -> UPLC.Program name1 uni fun ann
+             -> f (UPLC.Program name2 uni fun ann)
+overUPLCTerm f (UPLC.Program ann ver t) = UPLC.Program ann ver <$> f t
+
+overTPLCTerm :: Functor f
+             => (TPLC.Term tyname1 name1 uni fun ann -> f (TPLC.Term tyname2 name2 uni fun ann))
+             -> TPLC.Program tyname1 name1 uni fun ann
+             -> f (TPLC.Program tyname2 name2 uni fun ann)
+overTPLCTerm f (TPLC.Program ann ver t) = TPLC.Program ann ver <$> f t

@@ -71,10 +71,8 @@ module PlutusCore
     -- * DeBruijn representation
     , DeBruijn (..)
     , NamedDeBruijn (..)
-    , deBruijnProgram
-    , deBruijnTerm
-    , unDeBruijnProgram
-    , unDeBruijnTerm
+    , runDeBruijnT
+    ,namedTyDeBruijnM,namedTermDeBruijnM,unNamedTyDeBruijnM,unNamedTermDeBruijnM
     -- * Lexer
     , AlexPosn (..)
     -- * Formatting
