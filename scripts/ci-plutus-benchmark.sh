@@ -36,7 +36,7 @@ echo "[ci-plutus-benchmark]: Updating cabal database ..."
 cabal update
 
 echo "[ci-plutus-benchmark]: Running benchmark for PR branch ..."
-nix-shell --run "cabal bench plutus-benchmark:validation >bench-PR.log 2>&1"
+nix-shell --run "cabal bench plutus-benchmark:validation 2>&1 | tee bench-PR.log"
 
 echo "[ci-plutus-benchmark]: fetching origin ..."
 git fetch origin
